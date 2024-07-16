@@ -2,6 +2,9 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
 function setCanvasDimensions() {
     const ratio = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * ratio;
@@ -571,6 +574,7 @@ let deltaTime = 0;
 let planetButtons = [];
 
 function run() {
+    setCanvasDimensions();
     init();
 
     let currentTime = performance.now();
