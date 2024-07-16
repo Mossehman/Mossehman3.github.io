@@ -358,8 +358,6 @@ function onDocumentLoaded() {
 }
 function whileLoadingTransition() {
     if (!isLoadingTransition || !isDocumentLoaded) { return; }
-    scaleSpeed += 0.05;
-    scaleSpeed = Math.min(10, scaleSpeed);
     setTimeout(() => {
         transitionToMainPage()
     }, 1200);
