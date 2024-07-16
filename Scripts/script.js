@@ -39,6 +39,9 @@ var Earth = Object.create(CelestialBody);
 var Mars = Object.create(CelestialBody);
 var Jupiter = Object.create(CelestialBody);
 var Saturn = Object.create(CelestialBody);
+var Uranus = Object.create(CelestialBody);
+var Neptune = Object.create(CelestialBody);
+var Pluto = Object.create(CelestialBody);
 
 
 function generatePlanetParameters() {
@@ -119,6 +122,27 @@ function generatePlanetParameters() {
     Saturn.ringSpacing = 9;
     Saturn.ringColor = "#ffd29e";
 
+    Uranus.name = "Uranus";
+    Uranus.size = 7;
+    Uranus.xPos = canvas.clientWidth / 2 + 200;
+    Uranus.yPos = canvas.clientHeight / 2;
+    Uranus.hexColor = "#03f4fc";
+    Uranus.rotateSpeed = 50;
+
+    Neptune.name = "Neptune";
+    Neptune.size = 6.5;
+    Neptune.xPos = canvas.clientWidth / 2 + 240;
+    Neptune.yPos = canvas.clientHeight / 2;
+    Neptune.hexColor = "#032cfc";
+    Neptune.rotateSpeed = 60;
+
+    Pluto.name = "Pluto";
+    Pluto.size = 1;
+    Pluto.xPos = canvas.clientWidth / 2 + 260;
+    Pluto.yPos = canvas.clientHeight / 2;
+    Pluto.hexColor = "#bdb882";
+    Pluto.rotateSpeed = 45;
+
 }
 
 let Planets = [];
@@ -129,6 +153,9 @@ Planets.push(Earth);
 Planets.push(Mars);
 Planets.push(Jupiter);
 Planets.push(Saturn);
+Planets.push(Uranus);
+Planets.push(Neptune);
+Planets.push(Pluto);
 //#endregion
 
 let isDocumentLoaded = false;
@@ -461,40 +488,87 @@ function renderPlanets(dt) {
 
     if (planetScalingFactor < 1) {
         planetScalingFactor += dt * 2.5;
-    }
-    else if (planetScalingFactor > 1) {
+    } else if (planetScalingFactor > 1) {
         planetScalingFactor = 1;
+    }
+
+    if (planetScalingFactor >= 1) {
+        document.getElementById("planetsSelectionBar").style.transform = "translate(0, 0)";
     }
 
     for (var i = 0; i < Planets.length; i++) {
         let planetFromCenterX = Planets[i].xPos - canvas.clientWidth * 0.5;
         let planetFromCenterY = Planets[i].yPos - canvas.clientHeight * 0.5;
-        
+
+        // Draw planet with glow effect if enabled
         ctx.beginPath();
         ctx.arc(Planets[i].xPos + (planetFromCenterX * planetScalingFactor), Planets[i].yPos + (planetFromCenterY * planetScalingFactor), Planets[i].size * planetScalingFactor, 0, 2 * Math.PI);
         ctx.fillStyle = Planets[i].hexColor;
-        if (Planets[i].glow == true) {
+        if (Planets[i].glow) {
             ctx.shadowColor = Planets[i].hexColor;
             ctx.shadowBlur = Planets[i].glowValue;
+        } else {
+            ctx.shadowBlur = 0;
         }
         ctx.fill();
+        ctx.closePath();
 
+        // Draw rings
         for (var j = 0; j < Planets[i].ringCount; j++) {
             ctx.beginPath();
             ctx.arc(Planets[i].xPos + (planetFromCenterX * planetScalingFactor), Planets[i].yPos + (planetFromCenterY * planetScalingFactor), Planets[i].size * planetScalingFactor + ((j + 1) * Planets[i].ringSpacing), 0, 2 * Math.PI);
             ctx.strokeStyle = Planets[i].ringColor;
             ctx.lineWidth = Planets[i].ringSize;
             ctx.stroke();
+            ctx.closePath();
         }
+
+        // Reset shadow settings
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        // Draw text
+        ctx.beginPath();
+        let fontSize = Planets[i].size * planetScalingFactor * 0.1;
+        ctx.font = `${fontSize}vw Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        let textX = Planets[i].xPos + (planetFromCenterX * planetScalingFactor);
+        let textY = Planets[i].yPos + (planetFromCenterY * planetScalingFactor) - (Planets[i].size * planetScalingFactor) - (Planets[i].ringCount * Planets[i].ringSize) - ( 1 * Planets[i].size * planetScalingFactor);
+        ctx.fillText(Planets[i].name, textX, textY);
+        //ctx.strokeText(Planets[i].name, textX, textY);
+        ctx.closePath();
     }
 }
 
+
 //#endregion
 
+//#region solarSystemUI
+let translationValue = 0;
+let maxTranslationValue = (Planets.length - 6) * -1 * 25;
+document.querySelector(".planetNavRight").onclick = function () {
+    translationValue -= 25;
 
+    if (translationValue < maxTranslationValue) { translationValue = maxTranslationValue; }
+
+    document.querySelector('#planetsSelectionBar ul').style.transform = "translate(" + translationValue + "vw, 0)";
+};
+
+document.querySelector(".planetNavLeft").onclick = function () {
+    translationValue += 25;
+    if (translationValue > 0) { translationValue = 0; }
+
+    document.querySelector('#planetsSelectionBar ul').style.transform = "translate(" + translationValue + "vw, 0)";
+};
+
+//#endregion
 
 let lastUpdate = performance.now();
 let deltaTime = 0;
+let planetButtons = [];
 
 function run() {
     init();
@@ -517,6 +591,20 @@ function init() {
     generateStars();
     generatePlanetParameters();
     hasRunInit = true;
+
+    for (var i = 0; i < Planets.length; i++) {
+        document.querySelector('#planetsSelectionBar ul').innerHTML += `
+        <li><button id="planetButton">${Planets[i].name}</button><li>
+        `;
+    }
+
+    let listCount = document.querySelectorAll('#planetButton').length;
+
+    for (var i = 0; i < listCount; i++) {
+        console.log("a");
+        planetButtons.push(document.querySelector('#planetsSelectionBar ul').children[i]);
+        console.log(planetButtons[i].innerHTML);
+    }
 }
 
 function update(dt) {
