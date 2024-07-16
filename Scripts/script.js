@@ -608,6 +608,7 @@ function init() {
 }
 
 function update(dt) {
+    setCanvasDimensions();
     whileLoadingTransition();
     rotateStars(dt);
 
